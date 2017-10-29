@@ -4,9 +4,9 @@ import ru.iandreyshev.spreadsheetEngine.command.CommandBuilder;
 import ru.iandreyshev.spreadsheetEngine.command.CommandType;
 import ru.iandreyshev.spreadsheetEngine.command.ICommand;
 import ru.iandreyshev.spreadsheetEngine.table.Table;
+import ru.iandreyshev.spreadsheetEngine.table.TableAddress;
+import ru.iandreyshev.spreadsheetEngine.table.cell.Cell;
 import ru.iandreyshev.spreadsheetEngine.util.Logger;
-import ru.iandreyshev.spreadsheetEngine.util.Util;
-import ru.iandreyshev.spreadsheetEngine.util.Vec2i;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,7 +17,7 @@ import java.util.function.Consumer;
 public class SpreadsheetEngine {
     public static void main(String[] args) {
         try {
-            registerCommands();
+            createCommandInterpreter();
             handleInput();
         } catch (Exception e) {
             System.out.printf("Catch exception: %s", e.getMessage());
@@ -26,17 +26,20 @@ public class SpreadsheetEngine {
         System.exit(EXIT_SUCCESS);
     }
 
-    private Table table = new Table();
     private static final int EXIT_SUCCESS = 0;
     private static final int EXIT_FAILED = 1;
-    private static final HashMap<CommandType, Consumer<ICommand>> commandEvent = new HashMap<>();
+    private static final int ROW_COUNT = 10;
+    private static final int COL_COUNT = 10;
+    private static Table table = new Table(ROW_COUNT, COL_COUNT);
+    private static final HashMap<CommandType, Consumer<ICommand>> interpreter = new HashMap<>();
 
-    private static void registerCommands() {
-        commandEvent.put(CommandType.GET, (ICommand cmd) -> processGET(cmd.getCell()));
-        commandEvent.put(CommandType.SET, (ICommand cmd) -> processSET(cmd.getCell(), cmd.getValue()));
-        commandEvent.put(CommandType.FORMULA, (ICommand cmd) -> processFormula(cmd.getCell(), cmd.getValue()));
-        commandEvent.put(CommandType.DISPLAY, (ICommand cmd) -> processDisplay());
-        commandEvent.put(CommandType.HELP, (ICommand cmd) -> Logger.help());
+    private static void createCommandInterpreter() {
+        interpreter.put(CommandType.GET, (cmd) -> processGET(cmd.getCell()));
+        interpreter.put(CommandType.SET, (cmd) -> processSET(cmd.getCell(), cmd.getValue()));
+        interpreter.put(CommandType.FORMULA, (cmd) -> processFormula(cmd.getCell(), cmd.getValue()));
+        interpreter.put(CommandType.DISPLAY, (cmd) -> processDisplay());
+        interpreter.put(CommandType.HELP, (cmd) -> Logger.help());
+        interpreter.put(CommandType.INVALID, (cmd) -> Logger.invalidCommand());
     }
 
     private static void handleInput() throws IOException {
@@ -46,18 +49,27 @@ public class SpreadsheetEngine {
         String input;
 
         while ((input = reader.readLine()) != null) {
-            ICommand command = CommandBuilder.parse(input);
-            if (command.getType() == CommandType.EXIT) {
+            ICommand cmd = CommandBuilder.parse(input);
+            if (cmd.getType() == CommandType.EXIT) {
                 return;
-            } else if (commandEvent.containsKey(command.getType())) {
-                commandEvent.get(command.getType()).accept(command);
-            } else {
-                Logger.invalidCommand();
             }
+            Consumer<ICommand> event = interpreter.getOrDefault(cmd.getType(), (c) -> {
+                Logger.invalidCommand();
+            });
+            event.accept(cmd);
         }
     }
 
-    private static void processGET(String address) {
+    private static void processGET(String addressStr) {
+        try {
+            TableAddress address =  Table.toAddress(addressStr);
+            Cell cell = table.get(address);
+            Logger.output(cell);
+        } catch (IllegalArgumentException e) {
+            Logger.invalidCellFormat();
+        } catch (IndexOutOfBoundsException e) {
+            Logger.invalidCellAddress();
+        }
     }
 
     private static void processSET(String address, String value) {

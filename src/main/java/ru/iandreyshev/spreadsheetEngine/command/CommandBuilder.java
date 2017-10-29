@@ -21,10 +21,6 @@ public class CommandBuilder implements ICommand {
         return type;
     }
 
-    public String getCommand() {
-        return command;
-    }
-
     public String getCell() {
         return cell;
     }
@@ -36,7 +32,7 @@ public class CommandBuilder implements ICommand {
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Command type: [" + command.toString() + "]\n");
+        builder.append("Command type: [" + type.toString() + "]\n");
         builder.append("Cell: [" + cell + "]\n");
         builder.append("Value: [" + value + "]\n");
         return builder.toString();
@@ -44,13 +40,12 @@ public class CommandBuilder implements ICommand {
 
     private static final String GET_COMMAND = "get";
     private static final String SET_COMMAND = "set";
-    private static final String FORMULA_COMMAND = "formula";
+    private static final String FORMULA_COMMAND = "setformula";
     private static final String DISPLAY_COMMAND = "display";
     private static final String HELP_COMMAND = "help";
     private static final String EXIT_COMMAND = "exit";
 
     private CommandType type = CommandType.INVALID;
-    private String command = "";
     private String cell = "";
     private String value = "";
 
@@ -58,47 +53,27 @@ public class CommandBuilder implements ICommand {
 
     private void parseCommand(String input) {
         Matcher matcher = Pattern.compile(COMMAND_REGEX).matcher(input);
-        matcher.matches();
-
-        if (matcher.groupCount() < MIN_GROUPS_IN_COMMAND) {
-            return;
-        }
-        assignCommand(matcher.group(COMMAND_GROUP_NUM));
-
-        if (type == CommandType.GET) {
-            if (matcher.groupCount() < CELL_GROUP_NUM ||
-                    matcher.group(CELL_GROUP_NUM) == null) {
-                type = CommandType.INVALID;
-                return;
-            }
-            cell = matcher.group(CELL_GROUP_NUM);
-        } else if (type == CommandType.SET || type == CommandType.FORMULA) {
-            if (matcher.groupCount() < VALUE_GROUP_NUM ||
-                    matcher.group(CELL_GROUP_NUM) == null ||
-                    matcher.group(VALUE_GROUP_NUM) == null) {
-                type = CommandType.INVALID;
-                return;
-            }
-            cell = matcher.group(CELL_GROUP_NUM);
-            value = matcher.group(VALUE_GROUP_NUM);
-        }
+        matcher.find();
+        assignType(matcher.group(COMMAND_GROUP_NUM));
+        cell = matcher.group(CELL_GROUP_NUM);
+        value = matcher.group(VALUE_GROUP_NUM);
     }
 
-    private void assignCommand(String commandStr) {
-        command = commandStr.toLowerCase();
+    private void assignType(String cmd) {
+        cmd = cmd.toLowerCase();
         type = CommandType.INVALID;
 
-        if (command.compareTo(GET_COMMAND) == 0) {
+        if (cmd.compareTo(GET_COMMAND) == 0) {
             type = CommandType.GET;
-        } else if (command.compareTo(SET_COMMAND) == 0) {
+        } else if (cmd.compareTo(SET_COMMAND) == 0) {
             type = CommandType.SET;
-        } else if (command.compareTo(FORMULA_COMMAND) == 0) {
+        } else if (cmd.compareTo(FORMULA_COMMAND) == 0) {
             type = CommandType.FORMULA;
-        } else if (command.compareTo(DISPLAY_COMMAND) == 0) {
+        } else if (cmd.compareTo(DISPLAY_COMMAND) == 0) {
             type = CommandType.DISPLAY;
-        } else if (command.compareTo(HELP_COMMAND) == 0) {
+        } else if (cmd.compareTo(HELP_COMMAND) == 0) {
             type = CommandType.HELP;
-        } else if (command.compareTo(EXIT_COMMAND) == 0) {
+        } else if (cmd.compareTo(EXIT_COMMAND) == 0) {
             type = CommandType.EXIT;
         }
     }
