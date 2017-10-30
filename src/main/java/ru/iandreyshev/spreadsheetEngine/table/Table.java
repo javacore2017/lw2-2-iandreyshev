@@ -94,8 +94,6 @@ public class Table {
     }
 
     private boolean setExpression(Address address, Formula expression) {
-        if (!isExpressionCorrect()) {
-            return false;
-        }
+        return false;
     }
 }
