@@ -1,8 +1,13 @@
 package ru.iandreyshev.spreadsheetEngine.table.cell;
 
 public abstract class CellType<T> {
-    public CellType(T value) {
-        this.value = value;
+    CellType(String valueStr) throws IllegalArgumentException {
+        try {
+            set(parse(valueStr));
+        } catch (Exception e) {
+            throw new IllegalArgumentException(
+                    "Can not create cell type object from string " + valueStr);
+        }
     }
 
     public final T get() {
@@ -13,35 +18,17 @@ public abstract class CellType<T> {
         this.value = value;
     }
 
-    public Int intValue() throws ClassCastException {
-        throw new ClassCastException("Invalid cell type cast");
-    }
+    public void add(CellType value) {}
 
-    public Str strValue() throws ClassCastException {
-        throw new ClassCastException("Invalid cell type cast");
-    }
+    public void sub(CellType value) {}
 
-    public Dat datValue() throws ClassCastException {
-        throw new ClassCastException("Invalid cell type cast");
-    }
+    public void mul(CellType value) {}
 
-    public void add(CellType value) {
-        throw new IllegalArgumentException();
-    }
-
-    public void sub(CellType value) {
-        throw new IllegalArgumentException();
-    }
-
-    public void mul(CellType value) {
-        throw new IllegalArgumentException();
-    }
-
-    public void div(CellType value) {
-        throw new IllegalArgumentException();
-    }
+    public void div(CellType value) {}
 
     public abstract String toString();
+
+    protected abstract T parse(String valueStr) throws IllegalArgumentException;
 
     private T value;
 }

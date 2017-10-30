@@ -4,9 +4,10 @@ import ru.iandreyshev.spreadsheetEngine.command.CommandBuilder;
 import ru.iandreyshev.spreadsheetEngine.command.CommandType;
 import ru.iandreyshev.spreadsheetEngine.command.ICommand;
 import ru.iandreyshev.spreadsheetEngine.table.Table;
-import ru.iandreyshev.spreadsheetEngine.table.TableAddress;
-import ru.iandreyshev.spreadsheetEngine.table.cell.Cell;
-import ru.iandreyshev.spreadsheetEngine.util.Logger;
+import ru.iandreyshev.spreadsheetEngine.table.cell.*;
+import ru.iandreyshev.spreadsheetEngine.table.exception.IllegalExpression;
+import ru.iandreyshev.spreadsheetEngine.table.util.Address;
+import ru.iandreyshev.spreadsheetEngine.logger.Logger;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +21,7 @@ public class SpreadsheetEngine {
             createCommandInterpreter();
             handleInput();
         } catch (Exception e) {
-            System.out.printf("Catch exception: %s", e.getMessage());
+            Logger.exception(e.getMessage());
             System.exit(EXIT_FAILED);
         }
         System.exit(EXIT_SUCCESS);
@@ -47,6 +48,7 @@ public class SpreadsheetEngine {
         InputStreamReader stream = new InputStreamReader(System.in);
         BufferedReader reader = new BufferedReader(stream);
         String input;
+        Logger.waitCmd();
 
         while ((input = reader.readLine()) != null) {
             ICommand cmd = CommandBuilder.parse(input);
@@ -57,27 +59,80 @@ public class SpreadsheetEngine {
                 Logger.invalidCommand();
             });
             event.accept(cmd);
+            Logger.waitCmd();
         }
     }
 
     private static void processGET(String addressStr) {
+        if (!isAddressStrValid(addressStr)) {
+            Logger.invalidCellAddress(table.rowCount(), table.colCount());
+            return;
+        }
         try {
-            TableAddress address =  Table.toAddress(addressStr);
+            Address address = Address.parse(addressStr);
             Cell cell = table.get(address);
-            Logger.output(cell);
-        } catch (IllegalArgumentException e) {
-            Logger.invalidCellFormat();
+            Logger.print(cell.toString());
         } catch (IndexOutOfBoundsException e) {
-            Logger.invalidCellAddress();
+            Logger.invalidCellAddress(table.rowCount(), table.colCount());
         }
     }
 
-    private static void processSET(String address, String value) {
+    private static void processSET(String addressStr, String valueStr) {
+        if (!isAddressStrValid(addressStr)) {
+            Logger.invalidCellAddress(table.rowCount(), table.colCount());
+            return;
+        }
+
+        CellType newValue = null;
+        try {
+            newValue = new Str(valueStr);
+        } catch (Exception e) {}
+        try {
+            newValue = new Dat(valueStr);
+        } catch (Exception e) {}
+        try {
+            newValue = new Int(valueStr);
+        } catch (Exception e) {}
+
+        Address address = Address.parse(addressStr);
+        if (newValue == null) {
+            Logger.invalidCellFormat();
+        } else if (table.set(address, newValue)) {
+            // Logger.successSet(address, newValue);
+        } else {
+            Logger.invalidCellFormat();
+        }
     }
 
-    private static void processFormula(String address, String value) {
+    private static void processFormula(String addressStr, String value) {
+        if (!isAddressStrValid(addressStr)) {
+            Logger.invalidCellAddress(table.rowCount(), table.colCount());
+            return;
+        }
+
+        CellType newValue = null;
+        try {
+            newValue = new Formula(value);
+        } catch (IllegalArgumentException e) {
+            Logger.invalidCellFormat();
+        }
+
+        Address address = Address.parse(addressStr);
+        if (!table.set(address, newValue)) {
+            // Logger.successSet(address, newValue);
+        } else {
+            // Logger.invalidFormula;
+        }
     }
 
     private static void processDisplay() {
+    }
+
+    private static boolean isAddressStrValid(String addressStr) {
+        if (!Address.tryParse(addressStr)) {
+            return false;
+        }
+        Address address = Address.parse(addressStr);
+        return table.isAddressValid(address);
     }
 }

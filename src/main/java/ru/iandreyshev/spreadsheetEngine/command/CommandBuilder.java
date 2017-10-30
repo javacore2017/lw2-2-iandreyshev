@@ -57,6 +57,10 @@ public class CommandBuilder implements ICommand {
         assignType(matcher.group(COMMAND_GROUP_NUM));
         cell = matcher.group(CELL_GROUP_NUM);
         value = matcher.group(VALUE_GROUP_NUM);
+
+        if (value != null && value.length() > 0) {
+            value = value.substring(1, value.length() - 1);
+        }
     }
 
     private void assignType(String cmd) {
@@ -82,5 +86,5 @@ public class CommandBuilder implements ICommand {
     private static int COMMAND_GROUP_NUM = 1;
     private static int CELL_GROUP_NUM = 2;
     private static int VALUE_GROUP_NUM = 3;
-    private static String COMMAND_REGEX = " *([\\S]+) *([\\S]+)* *('[\\S- ]*')* *";
+    private static String COMMAND_REGEX = " *([\\S]+) *([\\S]+)* *(\\:[\\S- ]*)* *";
 }
