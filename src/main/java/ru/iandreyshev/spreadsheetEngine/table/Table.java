@@ -1,17 +1,18 @@
 package ru.iandreyshev.spreadsheetEngine.table;
 
-import javafx.util.Pair;
-import ru.iandreyshev.spreadsheetEngine.table.cell.*;
-import ru.iandreyshev.spreadsheetEngine.table.exception.IllegalExpression;
-import ru.iandreyshev.spreadsheetEngine.table.util.Address;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.function.BiConsumer;
 
 public class Table {
-    public Table(int rowCount, int colCount) {
+    public static final int MIN_ROW_COUNT = 1;
+    public static final int MIN_COL_COUNT = 1;
+
+    public Table(Address bottomRightAddress) {
+        int rowCount = bottomRightAddress.getRow();
+        int colCount = bottomRightAddress.getCol();
+
         rowCount = (rowCount < MIN_ROW_COUNT) ? MIN_ROW_COUNT : rowCount;
         colCount = (colCount < MIN_COL_COUNT) ? MIN_COL_COUNT : colCount;
 
@@ -20,80 +21,94 @@ public class Table {
         for (int row = 0; row < rowCount; ++row) {
             table.add(new ArrayList<>());
             for (int col = 0; col < colCount; ++col) {
-                table.get(row).add(new Cell(INIT_CELL_VALUE));
+                Str value = new Str();
+                value.setFromStr("");
+                table.get(row).add(value);
             }
+        }
+    }
+
+    public String getValue(Address address) throws IndexOutOfBoundsException {
+        if (!isAddressValid(address)) {
+            throw new IndexOutOfBoundsException("Invalid address");
+        }
+        return get(address) == null ? "" : get(address).toString();
+    }
+
+    public void setSimple(Address address, String str)
+            throws IllegalArgumentException, IndexOutOfBoundsException {
+        validateOnSet(address, str);
+        trySetStr(address, str);
+        trySetDat(address, str);
+        trySetInt(address, str);
+    }
+
+    public void setFormula(Address address, String str)
+            throws IllegalArgumentException, IndexOutOfBoundsException {
+        validateOnSet(address, str);
+        Formula expression = new Formula();
+        if (!expression.setFromStr(str)) {
+            throw new IllegalArgumentException("Invalid formula format");
         }
     }
 
     public boolean isAddressValid(Address address) {
         if (address == null) {
             return false;
-        } if (address.getRow() < 0 || address.getRow() > table.size() - 1) {
+        }
+        if (address.getRow() < MIN_ROW_COUNT || address.getRow() > rowCount()) {
             return false;
-        } else if (address.getCol() < 0 || address.getCol() > table.size() - 1) {
-            return false;
-        }
-        return true;
-    }
-
-    public Cell get(Address address) throws IndexOutOfBoundsException {
-        if (!isAddressValid(address)) {
-            throw new IndexOutOfBoundsException("Invalid cell address");
-        }
-        return table.get(address.getRow()).get(address.getCol());
-    }
-
-    public boolean set(Address address, CellType value)
-            throws IllegalArgumentException, IndexOutOfBoundsException {
-        if (value == null) {
-            throw new IllegalArgumentException("Try set to cell null value");
-        } else if (!isAddressValid(address)) {
-            throw new IndexOutOfBoundsException("Cell address is out of range");
-        }
-
-        if (value instanceof Int) {
-            setValue(address, value);
-        } else if (value instanceof Str) {
-            setValue(address, value);
-        } else if (value instanceof Dat) {
-            setValue(address, value);
-        } else if (value instanceof Formula) {
-            setExpression(address, (Formula)value);
-        } else {
+        } else if (address.getCol() < MIN_COL_COUNT || address.getCol() > colCount()) {
             return false;
         }
         return true;
     }
 
-    public void forEach(BiConsumer<Cell, Address> action) {
-        for (int row = 0; row < table.size(); ++row) {
-            for (int col = 0; col < table.size(); ++col) {
-                final Address address = new Address(row, col);
-                action.accept(table.get(row).get(col), address);
-            }
-        }
-    }
-
-    public int rowCount() {
+    private int rowCount() {
         return table.size();
     }
 
-    public int colCount() {
-        return rowCount() == 0 ? 0 : table.get(0).size();
+    private int colCount() {
+        return table.get(0).size();
     }
 
-    private static final int MIN_ROW_COUNT = 1;
-    private static final int MIN_COL_COUNT = 1;
-    private static final CellType INIT_CELL_VALUE = new Str("");
+    private ArrayList<ArrayList<CellType>> table;
 
-    private ArrayList<ArrayList<Cell>> table;
-    private HashMap<Address, HashSet<Address>> expressionMemory;
-
-    private void setValue(Address address, CellType value) {
-        table.get(address.getRow()).get(address.getCol()).set(value);
+    private CellType get(Address address) {
+        return table.get(address.getRow() - 1).get(address.getCol() - 1);
     }
 
-    private boolean setExpression(Address address, Formula expression) {
-        return false;
+    private void set(Address address, CellType value) {
+        table.get(address.getRow() - 1).set(address.getCol() - 1, value);
+    }
+
+    private void validateOnSet(Address address, String valueStr)
+            throws IllegalArgumentException, IndexOutOfBoundsException {
+        if (!isAddressValid(address)) {
+            throw new IndexOutOfBoundsException("Invalid address");
+        } else if (valueStr == null) {
+            throw new IllegalArgumentException("Value string is null");
+        }
+    }
+
+    private void trySetStr(Address address, String str) {
+        Str value = new Str();
+        if (value.setFromStr(str)) {
+            set(address, value);
+        }
+    }
+
+    private void trySetDat(Address address, String str) {
+        Dat value = new Dat();
+        if (value.setFromStr(str)) {
+            set(address, value);
+        }
+    }
+
+    private void trySetInt(Address address, String str) {
+        Int value = new Int();
+        if (value.setFromStr(str)) {
+            set(address, value);
+        }
     }
 }

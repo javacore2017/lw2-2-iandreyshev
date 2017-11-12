@@ -59,7 +59,7 @@ public class CommandBuilder implements ICommand {
         value = matcher.group(VALUE_GROUP_NUM);
 
         if (value != null && value.length() > 0) {
-            value = value.substring(1, value.length() - 1);
+            value = value.substring(1);
         }
     }
 

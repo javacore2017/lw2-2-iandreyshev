@@ -1,10 +1,6 @@
-package ru.iandreyshev.spreadsheetEngine.table.cell;
+package ru.iandreyshev.spreadsheetEngine.table;
 
-public final class Int extends CellType<Integer> {
-    public Int (String valueStr) throws IllegalArgumentException {
-        super(valueStr);
-    }
-
+final class Int extends CellType<Integer> {
     @Override
     public void add(CellType value) {
         Integer anotherVal = tryCast(value);
@@ -49,10 +45,8 @@ public final class Int extends CellType<Integer> {
     }
 
     @Override
-    protected Integer parse(String valueStr) throws IllegalArgumentException {
-        StringBuilder builder = new StringBuilder(valueStr);
-        String trimmed = builder.toString().trim();
-        return Integer.parseInt(trimmed);
+    protected Integer parse(String str) throws IllegalArgumentException {
+        return Integer.parseInt(str.trim());
     }
 
     private Integer tryCast(Object cellValue) {

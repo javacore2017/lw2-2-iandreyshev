@@ -1,10 +1,6 @@
-package ru.iandreyshev.spreadsheetEngine.table.cell;
+package ru.iandreyshev.spreadsheetEngine.table;
 
-public final class Str extends CellType<String> {
-    public Str(String value) throws IllegalArgumentException {
-        super(value);
-    }
-
+final class Str extends CellType<String> {
     @Override
     public String toString() {
         return get();

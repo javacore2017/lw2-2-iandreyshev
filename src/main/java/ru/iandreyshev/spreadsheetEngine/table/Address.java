@@ -1,6 +1,4 @@
-package ru.iandreyshev.spreadsheetEngine.table.util;
-
-import ru.iandreyshev.spreadsheetEngine.table.cell.Str;
+package ru.iandreyshev.spreadsheetEngine.table;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -29,6 +27,7 @@ public class Address {
 
         return new Address(row, col);
     }
+
     public static boolean tryParse(String str) {
         try {
             parse(str);
@@ -37,12 +36,29 @@ public class Address {
         }
         return true;
     }
-    public static String colToString(Integer col) throws IllegalArgumentException {
-        if (col < 0) {
+
+    public static String colToString(int col) throws IllegalArgumentException {
+        if (col < MIN_VALUE) {
             throw new IllegalArgumentException("Try convert invalid col value");
         }
-        return "";
+
+        StringBuilder resultStr = new StringBuilder();
+
+        if (col <= ADDRESS_RADIX) {
+            resultStr.append(Character.toChars('A' + col - 1)[0]);
+        } else {
+            String str = Integer.toString(col, ADDRESS_RADIX);
+
+            for (int i = 0; i < str.length(); ++i) {
+                char ch = Character.toLowerCase(str.charAt(i));
+
+
+            }
+        }
+
+        return resultStr.toString();
     }
+
     public static int colToNumber(String col) throws IllegalArgumentException {
         if (col == null || col.isEmpty()) {
             throw new IllegalArgumentException("Invalid col format");
@@ -52,10 +68,12 @@ public class Address {
 
         for (int i = 0; i < col.length(); ++i) {
             char ch = col.charAt(i);
+
             if (!Character.isAlphabetic(ch)) {
                 throw new IllegalArgumentException("Invalid col format");
             }
             ch = Character.toLowerCase(ch);
+
             if (ch >= 'a' && ch <= 'i') {
                 int offset = ch - 'a';
                 ch = Character.toChars('1' + offset)[0];
@@ -73,23 +91,28 @@ public class Address {
         this.col = col;
     }
 
-    public int getCol() {
-        return col;
-    }
-
     public int getRow() {
         return row;
     }
 
+    public int getCol() {
+        return col;
+    }
+
+    public String getColStr() {
+        return colToString(getCol());
+    }
+
     @Override
     public String toString() {
-        return "[" + row + ", " + col +"]";
+        return row + getColStr();
     }
 
     private static final String ADDRESS_REGEX = "( *)([0-9]+)([a-zA-Z]+)( *)";
     private static final Integer ADDRESS_RADIX = 26;
     private static final int ROW_GROUP = 2;
     private static final int COL_GROUP = 3;
+    private static final int MIN_VALUE = 1;
 
     private int row;
     private int col;
