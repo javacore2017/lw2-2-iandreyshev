@@ -53,6 +53,7 @@ final class Formula extends CellType<String> {
         } catch (Exception ex) {
             return false;
         }
+
         return true;
     }
 
@@ -63,6 +64,7 @@ final class Formula extends CellType<String> {
             final char ch = expression.charAt(i);
             result.append((ch != LEFT_BRACKET && ch != RIGHT_BRACKET) ? ch : ' ');
         }
+
         return result.toString();
     }
 }

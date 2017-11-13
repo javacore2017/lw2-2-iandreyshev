@@ -1,10 +1,6 @@
 package ru.iandreyshev.spreadsheetEngine.log;
 
 public class HelpLogEvent extends LogEvent {
-    public HelpLogEvent() {
-        addString(MESSAGE);
-    }
-
     private final static String MESSAGE =
             "Available commands:\n" +
                     "  GET <cell>                      to get cell value,\n" +
@@ -13,4 +9,8 @@ public class HelpLogEvent extends LogEvent {
                     "  DISPLAY                         to display table,\n" +
                     "  HELP                            to write all available commands,\n" +
                     "  EXIT                            to exit from application.";
+
+    public HelpLogEvent() {
+        addString(MESSAGE);
+    }
 }

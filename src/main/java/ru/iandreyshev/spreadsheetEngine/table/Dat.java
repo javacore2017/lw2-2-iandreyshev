@@ -16,9 +16,11 @@ final class Dat extends CellType<String> {
     protected String parse(String valueStr) throws IllegalArgumentException {
         String trimmed = valueStr.trim();
         Matcher matcher = Pattern.compile(REGEX).matcher(trimmed);
+
         if (!matcher.matches()) {
             throw new IllegalArgumentException("Invalid date format");
         }
+
         return trimmed;
     }
 }

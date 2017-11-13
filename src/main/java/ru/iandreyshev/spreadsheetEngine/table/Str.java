@@ -11,6 +11,7 @@ final class Str extends CellType<String> {
         if (valueStr == null) {
             throw new IllegalArgumentException();
         }
+
         return valueStr;
     }
 }

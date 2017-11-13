@@ -21,18 +21,21 @@ abstract class CellType<T> {
             return false;
         }
         value = parse(str);
+
         return true;
     }
 
     private boolean tryParse(String str) {
         try {
             T val = parse(str);
+
             if (val == null) {
                 return false;
             }
         } catch (Exception e) {
             return false;
         }
+
         return true;
     }
 

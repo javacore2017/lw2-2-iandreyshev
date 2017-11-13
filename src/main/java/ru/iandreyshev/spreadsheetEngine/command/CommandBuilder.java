@@ -4,8 +4,24 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class CommandBuilder implements ICommand {
+    private static final int COMMAND_GROUP_NUM = 1;
+    private static final int CELL_GROUP_NUM = 2;
+    private static final int VALUE_GROUP_NUM = 3;
+    private static final String COMMAND_REGEX = " *([\\S]+) *([a-zA-Z0-9]+)* *(\\:[\\S- ]*)* *";
+    private static final String GET_COMMAND = "get";
+    private static final String SET_COMMAND = "set";
+    private static final String FORMULA_COMMAND = "setformula";
+    private static final String DISPLAY_COMMAND = "display";
+    private static final String HELP_COMMAND = "help";
+    private static final String EXIT_COMMAND = "exit";
+
+    private CommandType type = CommandType.INVALID;
+    private String cell = "";
+    private String value = "";
+
     public static ICommand parse(String input) throws IllegalArgumentException {
         CommandBuilder command = new CommandBuilder();
+
         if (input == null) {
             return command;
         }
@@ -14,6 +30,7 @@ public class CommandBuilder implements ICommand {
         } catch (Exception ex) {
             command.type = CommandType.INVALID;
         }
+
         return command;
     }
 
@@ -35,19 +52,9 @@ public class CommandBuilder implements ICommand {
         builder.append("Command type: [" + type.toString() + "]\n");
         builder.append("Cell: [" + cell + "]\n");
         builder.append("Value: [" + value + "]\n");
+
         return builder.toString();
     }
-
-    private static final String GET_COMMAND = "get";
-    private static final String SET_COMMAND = "set";
-    private static final String FORMULA_COMMAND = "setformula";
-    private static final String DISPLAY_COMMAND = "display";
-    private static final String HELP_COMMAND = "help";
-    private static final String EXIT_COMMAND = "exit";
-
-    private CommandType type = CommandType.INVALID;
-    private String cell = "";
-    private String value = "";
 
     private CommandBuilder() {}
 
@@ -81,10 +88,4 @@ public class CommandBuilder implements ICommand {
             type = CommandType.EXIT;
         }
     }
-
-    private static int MIN_GROUPS_IN_COMMAND = 1;
-    private static int COMMAND_GROUP_NUM = 1;
-    private static int CELL_GROUP_NUM = 2;
-    private static int VALUE_GROUP_NUM = 3;
-    private static String COMMAND_REGEX = " *([\\S]+) *([a-zA-Z0-9]+)* *(\\:[\\S- ]*)* *";
 }

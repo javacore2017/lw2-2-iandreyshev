@@ -57,6 +57,7 @@ public class Address {
             final int code = (i == 0) ? 'A' + offset - 1 : 'A' + offset;
             resultStr.append(Character.toChars(code)[0]);
         }
+
         return resultStr.toString();
     }
 
@@ -80,6 +81,7 @@ public class Address {
             }
             resultStr.append(ch);
         }
+
         return Integer.parseUnsignedInt(resultStr.toString(), ADDRESS_RADIX);
     }
 

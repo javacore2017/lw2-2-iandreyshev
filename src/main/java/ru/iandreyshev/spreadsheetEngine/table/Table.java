@@ -34,6 +34,7 @@ public class Table {
         if (!isAddressValid(address)) {
             throw new IndexOutOfBoundsException("Invalid address");
         }
+
         return get(address) == null ? "" : get(address).toString();
     }
 
@@ -49,6 +50,7 @@ public class Table {
             throws IllegalArgumentException, IndexOutOfBoundsException {
         validateOnSet(address, str);
         Formula formula = new Formula();
+
         if (!formula.setFromStr(str)) {
             throw new IllegalArgumentException("Invalid formula format");
         }
@@ -63,6 +65,7 @@ public class Table {
         } else if (address.getCol() < MIN_COL_COUNT || address.getCol() > colCount()) {
             return false;
         }
+
         return true;
     }
 
@@ -93,6 +96,7 @@ public class Table {
 
     private void trySetStr(Address address, String str) {
         Str value = new Str();
+
         if (value.setFromStr(str)) {
             set(address, value);
         }
@@ -100,6 +104,7 @@ public class Table {
 
     private void trySetDat(Address address, String str) {
         Dat value = new Dat();
+
         if (value.setFromStr(str)) {
             set(address, value);
         }
@@ -107,6 +112,7 @@ public class Table {
 
     private void trySetInt(Address address, String str) {
         Int value = new Int();
+
         if (value.setFromStr(str)) {
             set(address, value);
         }
