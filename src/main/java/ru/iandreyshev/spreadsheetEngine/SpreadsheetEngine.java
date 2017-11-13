@@ -30,12 +30,12 @@ public class SpreadsheetEngine {
     }
 
     private static void createCommandInterpreter() {
-        interpreter.put(CommandType.GET, (cmd) -> processGET(cmd.getCell()));
-        interpreter.put(CommandType.SET, (cmd) -> processSET(cmd.getCell(), cmd.getValue()));
-        interpreter.put(CommandType.FORMULA, (cmd) -> processFormula(cmd.getCell(), cmd.getValue()));
-        interpreter.put(CommandType.DISPLAY, (cmd) -> processDisplay());
-        interpreter.put(CommandType.HELP, (cmd) -> log(new HelpLogEvent()));
-        interpreter.put(CommandType.INVALID, (cmd) -> log(new InvalidCommandLogEvent()));
+        interpreter.put(CommandType.GET, cmd -> processGET(cmd.getCell()));
+        interpreter.put(CommandType.SET, cmd -> processSET(cmd.getCell(), cmd.getValue()));
+        interpreter.put(CommandType.FORMULA, cmd -> processFormula(cmd.getCell(), cmd.getValue()));
+        interpreter.put(CommandType.DISPLAY, cmd -> processDisplay());
+        interpreter.put(CommandType.HELP, cmd -> log(new HelpLogEvent()));
+        interpreter.put(CommandType.INVALID, cmd -> log(new InvalidCommandLogEvent()));
     }
 
     private static void handleInput() throws IOException {
@@ -64,8 +64,7 @@ public class SpreadsheetEngine {
             log(new InvalidCellAddressLogEvent(TOP_LEFT_CELL, BOTTOM_RIGHT_CELL));
             return;
         }
-        Address address = Address.parse(addressStr);
-        String cell = table.getValue(address);
+        String cell = table.getValue(Address.parse(addressStr));
         log(new PrintLogEvent(cell));
     }
 
@@ -74,8 +73,7 @@ public class SpreadsheetEngine {
             log(new InvalidCellAddressLogEvent(TOP_LEFT_CELL, BOTTOM_RIGHT_CELL));
             return;
         }
-        Address address = Address.parse(addressStr);
-        table.setSimple(address, valueStr);
+        table.setSimple(Address.parse(addressStr), valueStr);
     }
 
     private static void processFormula(String addressStr, String value) {
@@ -83,12 +81,10 @@ public class SpreadsheetEngine {
             log(new InvalidCellAddressLogEvent(TOP_LEFT_CELL, BOTTOM_RIGHT_CELL));
             return;
         }
-        Address address = Address.parse(addressStr);
-
         try {
-            table.setFormula(address, value);
-        } catch (IllegalArgumentException e) {
-            log(new InvalidFormulaFormatLogEvent(value));
+            table.setFormula(Address.parse(addressStr), value);
+        } catch (Exception ex) {
+            log(new InvalidFormulaFormatLogEvent(value, ex.getMessage()));
         }
     }
 

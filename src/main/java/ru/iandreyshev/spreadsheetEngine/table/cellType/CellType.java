@@ -1,22 +1,9 @@
-package ru.iandreyshev.spreadsheetEngine.table;
+package ru.iandreyshev.spreadsheetEngine.table.cellType;
 
-abstract class CellType<T> {
+public abstract class CellType<T> {
     private T value;
 
-    @Override
-    public String toString() {
-        return value.toString();
-    }
-
-    final T get() {
-        return value;
-    }
-
-    final void set(T value) {
-        this.value = value;
-    }
-
-    final boolean setFromStr(String str) {
+    public final boolean setFromStr(String str) {
         if (!tryParse(str)) {
             return false;
         }
@@ -24,6 +11,29 @@ abstract class CellType<T> {
 
         return true;
     }
+
+    @Override
+    public String toString() {
+        return value.toString();
+    }
+
+    public final T get() {
+        return value;
+    }
+
+    final void set(T value) {
+        this.value = value;
+    }
+
+    final T tryCast(Object cellValue) {
+        try {
+            return (T) cellValue;
+        } catch (Exception ex) {
+            return null;
+        }
+    }
+
+    abstract T parse(String str);
 
     private boolean tryParse(String str) {
         try {
@@ -38,14 +48,4 @@ abstract class CellType<T> {
 
         return true;
     }
-
-    void add(CellType value) {}
-
-    void sub(CellType value) {}
-
-    void mul(CellType value) {}
-
-    void div(CellType value) {}
-
-    abstract T parse(String str);
 }

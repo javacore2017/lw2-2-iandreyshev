@@ -1,6 +1,14 @@
-package ru.iandreyshev.spreadsheetEngine.table;
+package ru.iandreyshev.spreadsheetEngine.table.cellType;
 
-final class Str extends CellType<String> {
+public final class Str extends CellType<String> {
+    public Str() {
+        set("");
+    }
+
+    public Str(String value) {
+        set(value);
+    }
+
     @Override
     public String toString() {
         return get();

@@ -27,7 +27,7 @@ public class Address {
         try {
             final int col = colToNumber(matcher.group(COL_GROUP));
             final int row = Integer.parseUnsignedInt(matcher.group(ROW_GROUP));
-            return new Address(row, col);
+            return new Address(col, row);
         } catch (Exception e) {
             throw new IllegalArgumentException("Invalid cell address format");
         }
