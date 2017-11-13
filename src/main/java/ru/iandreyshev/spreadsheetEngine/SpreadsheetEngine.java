@@ -14,6 +14,12 @@ import java.util.HashMap;
 import java.util.function.Consumer;
 
 public class SpreadsheetEngine {
+    private static final Address TOP_LEFT_CELL = new Address(Table.MIN_ROW_COUNT, Table.MIN_COL_COUNT);
+    private static final Address BOTTOM_RIGHT_CELL = new Address(10, 10);
+    private static final HashMap<CommandType, Consumer<ICommand>> interpreter = new HashMap<>();
+    private static final String EXIT_MESSAGE = "Exit from table... Goodbye!";
+    private static Table table = new Table(BOTTOM_RIGHT_CELL);
+
     public static void main(String[] args) {
         try {
             createCommandInterpreter();
@@ -22,11 +28,6 @@ public class SpreadsheetEngine {
             log(new ExceptionLogEvent(e));
         }
     }
-
-    private static final Address TOP_LEFT_CELL = new Address(Table.MIN_ROW_COUNT, Table.MIN_COL_COUNT);
-    private static final Address BOTTOM_RIGHT_CELL = new Address(10, 100);
-    private static Table table = new Table(BOTTOM_RIGHT_CELL);
-    private static final HashMap<CommandType, Consumer<ICommand>> interpreter = new HashMap<>();
 
     private static void createCommandInterpreter() {
         interpreter.put(CommandType.GET, (cmd) -> processGET(cmd.getCell()));
@@ -46,15 +47,16 @@ public class SpreadsheetEngine {
 
         while ((input = reader.readLine()) != null) {
             ICommand cmd = CommandBuilder.parse(input);
+
             if (cmd.getType() == CommandType.EXIT) {
-                return;
+                break;
             }
-            Consumer<ICommand> event = interpreter.getOrDefault(cmd.getType(), (c) -> {
-                log(new InvalidCommandLogEvent());
-            });
-            event.accept(cmd);
+            interpreter
+                    .getOrDefault(cmd.getType(), c -> log(new InvalidCommandLogEvent()))
+                    .accept(cmd);
             log(new WaitCommandLogEvent());
         }
+        log(new PrintLogEvent(EXIT_MESSAGE));
     }
 
     private static void processGET(String addressStr) {
@@ -72,15 +74,8 @@ public class SpreadsheetEngine {
             log(new InvalidCellAddressLogEvent(TOP_LEFT_CELL, BOTTOM_RIGHT_CELL));
             return;
         }
-
         Address address = Address.parse(addressStr);
-        System.out.print(address.getCol());
-
-        try {
-            table.setSimple(address, valueStr);
-        } catch (IllegalArgumentException e) {
-            log(new InvalidCellFormatLogEvent());
-        }
+        table.setSimple(address, valueStr);
     }
 
     private static void processFormula(String addressStr, String value) {
@@ -88,13 +83,12 @@ public class SpreadsheetEngine {
             log(new InvalidCellAddressLogEvent(TOP_LEFT_CELL, BOTTOM_RIGHT_CELL));
             return;
         }
-
         Address address = Address.parse(addressStr);
 
         try {
             table.setFormula(address, value);
         } catch (IllegalArgumentException e) {
-            log(new InvalidCellFormatLogEvent());
+            log(new InvalidFormulaFormatLogEvent(value));
         }
     }
 

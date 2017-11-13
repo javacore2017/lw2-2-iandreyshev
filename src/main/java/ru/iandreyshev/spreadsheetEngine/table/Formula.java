@@ -1,34 +1,40 @@
 package ru.iandreyshev.spreadsheetEngine.table;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringTokenizer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 final class Formula extends CellType<String> {
-    public Integer getResult() {
-        return result;
-    }
+    private static final String SIGN_REGEX = "[-+*/]";
+    private static final char LEFT_BRACKET = '(';
+    private static final char RIGHT_BRACKET = ')';
+    private static final String TOKENS_SEPARATOR = " ";
 
-    @Override
-    public String toString() {
-        return (get() == null) ? NOT_CALC_VALUE : result.toString();
+    private List<String> tokens = new ArrayList<>();
+
+    public List<String> getTokens() {
+        return tokens;
     }
 
     @Override
     protected String parse(String str) throws IllegalArgumentException {
-        StringTokenizer tokenizer = new StringTokenizer(prepareToParse(str));
+        StringTokenizer tokenizer = new StringTokenizer(deleteBrackets(str));
         StringBuilder builder = new StringBuilder();
 
         while (tokenizer.hasMoreTokens()) {
             String token = tokenizer.nextToken();
-            if (!isSignToken(token) && !Address.tryParse(token)) {
+
+            if (!isSign(token) && !isNumber(token) && !Address.tryParse(token)) {
                 throw new IllegalArgumentException();
             }
-            builder.append(tokenizer.nextToken());
-            builder.append(" ");
+            tokens.add(token);
+            builder.append(token);
+            builder.append(TOKENS_SEPARATOR);
         }
-
         String result = builder.toString().trim();
+
         if (result.isEmpty()) {
             throw new IllegalArgumentException();
         }
@@ -36,22 +42,26 @@ final class Formula extends CellType<String> {
         return result;
     }
 
-    private static final String SIGN_REGEX = "( |\\-|\\+|\\*|\\/)+";
-    private static final String NOT_CALC_VALUE = "Null";
-
-    private Integer result = null;
-
-    private boolean isSignToken(String token) {
+    private boolean isSign(String token) {
         Matcher matcher = Pattern.compile(SIGN_REGEX).matcher(token);
         return matcher.matches();
     }
 
-    private String prepareToParse(String expression) {
+    private boolean isNumber(String token) {
+        try {
+            Integer.parseInt(token);
+        } catch (Exception ex) {
+            return false;
+        }
+        return true;
+    }
+
+    private String deleteBrackets(String expression) {
         StringBuilder result = new StringBuilder();
+
         for (int i = 0; i < expression.length(); ++i) {
-            if (expression.charAt(i) != '(' && expression.charAt(i) != ')') {
-                result.append(expression.charAt(i));
-            }
+            final char ch = expression.charAt(i);
+            result.append((ch != LEFT_BRACKET && ch != RIGHT_BRACKET) ? ch : ' ');
         }
         return result.toString();
     }

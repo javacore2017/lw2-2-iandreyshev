@@ -1,7 +1,14 @@
 package ru.iandreyshev.spreadsheetEngine.table;
 
 abstract class CellType<T> {
-    public final T get() {
+    private T value;
+
+    @Override
+    public String toString() {
+        return value.toString();
+    }
+
+    final T get() {
         return value;
     }
 
@@ -38,6 +45,4 @@ abstract class CellType<T> {
     void div(CellType value) {}
 
     abstract T parse(String str);
-
-    private T value;
 }

@@ -9,6 +9,8 @@ public class Table {
     public static final int MIN_ROW_COUNT = 1;
     public static final int MIN_COL_COUNT = 1;
 
+    private ArrayList<ArrayList<CellType>> table;
+
     public Table(Address bottomRightAddress) {
         int rowCount = bottomRightAddress.getRow();
         int colCount = bottomRightAddress.getCol();
@@ -46,8 +48,8 @@ public class Table {
     public void setFormula(Address address, String str)
             throws IllegalArgumentException, IndexOutOfBoundsException {
         validateOnSet(address, str);
-        Formula expression = new Formula();
-        if (!expression.setFromStr(str)) {
+        Formula formula = new Formula();
+        if (!formula.setFromStr(str)) {
             throw new IllegalArgumentException("Invalid formula format");
         }
     }
@@ -71,8 +73,6 @@ public class Table {
     private int colCount() {
         return table.get(0).size();
     }
-
-    private ArrayList<ArrayList<CellType>> table;
 
     private CellType get(Address address) {
         return table.get(address.getRow() - 1).get(address.getCol() - 1);

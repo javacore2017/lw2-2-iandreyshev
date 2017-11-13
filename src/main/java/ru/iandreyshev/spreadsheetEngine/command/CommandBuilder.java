@@ -86,5 +86,5 @@ public class CommandBuilder implements ICommand {
     private static int COMMAND_GROUP_NUM = 1;
     private static int CELL_GROUP_NUM = 2;
     private static int VALUE_GROUP_NUM = 3;
-    private static String COMMAND_REGEX = " *([\\S]+) *([\\S]+)* *(\\:[\\S- ]*)* *";
+    private static String COMMAND_REGEX = " *([\\S]+) *([a-zA-Z0-9]+)* *(\\:[\\S- ]*)* *";
 }

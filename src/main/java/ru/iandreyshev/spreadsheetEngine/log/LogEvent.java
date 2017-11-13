@@ -1,6 +1,10 @@
 package ru.iandreyshev.spreadsheetEngine.log;
 
 public class LogEvent {
+    private String message = OUTPUT_PATTERN;
+    private final static String OUTPUT_PATTERN = "> ";
+    private final static String ITEM_MARKER = "  ";
+
     @Override
     public String toString() {
         return message;
@@ -8,11 +12,15 @@ public class LogEvent {
 
     LogEvent() { }
 
-    void add(String str) {
-        message += str;
+    void addString(String str) {
+        message += str + "\n";
     }
 
-    private String message = OUTPUT_PATTERN;
+    void addText(String text) {
+        message += text;
+    }
 
-    private final static String OUTPUT_PATTERN = "> ";
+    void addListItem(String item) {
+        message += ITEM_MARKER + item + "\n";
+    }
 }
