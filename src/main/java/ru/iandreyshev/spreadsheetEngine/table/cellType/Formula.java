@@ -6,6 +6,8 @@ import ru.iandreyshev.spreadsheetEngine.table.Arithmetic;
 import java.util.*;
 
 public final class Formula extends CellType<CellType> {
+    public static final String UNDEFINED = "Undefined";
+
     private static final char LEFT_BRACKET = '(';
     private static final char RIGHT_BRACKET = ')';
 
@@ -25,6 +27,19 @@ public final class Formula extends CellType<CellType> {
 
     public void setResult(CellType value) {
         set(value);
+    }
+
+    @Override
+    public CellType get() {
+        CellType value = super.get();
+        return value == null ? new Str(UNDEFINED) : value;
+    }
+
+    @Override
+    public String toString() {
+        CellType value = get();
+
+        return value == null ? UNDEFINED : value.toString();
     }
 
     @Override

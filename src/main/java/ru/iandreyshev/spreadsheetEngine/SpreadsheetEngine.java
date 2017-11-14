@@ -6,6 +6,7 @@ import ru.iandreyshev.spreadsheetEngine.command.ICommand;
 import ru.iandreyshev.spreadsheetEngine.table.Table;
 import ru.iandreyshev.spreadsheetEngine.table.Address;
 import ru.iandreyshev.spreadsheetEngine.log.*;
+import ru.iandreyshev.spreadsheetEngine.table.Vizualizer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -17,6 +18,7 @@ public class SpreadsheetEngine {
     private static final Address TOP_LEFT_CELL = new Address(Table.MIN_ROW_COUNT, Table.MIN_COL_COUNT);
     private static final Address BOTTOM_RIGHT_CELL = new Address(10, 10);
     private static final HashMap<CommandType, Consumer<ICommand>> interpreter = new HashMap<>();
+    private static final String OK = "OK";
     private static final String EXIT_MESSAGE = "Exit from table... Goodbye!";
     private static Table table = new Table(BOTTOM_RIGHT_CELL);
 
@@ -54,9 +56,10 @@ public class SpreadsheetEngine {
             interpreter
                     .getOrDefault(cmd.getType(), c -> log(new InvalidCommandLogEvent()))
                     .accept(cmd);
+            log(new ObjectLogEvent(OK));
             log(new WaitCommandLogEvent());
         }
-        log(new PrintLogEvent(EXIT_MESSAGE));
+        log(new ObjectLogEvent(EXIT_MESSAGE));
     }
 
     private static void processGET(String addressStr) {
@@ -65,7 +68,7 @@ public class SpreadsheetEngine {
             return;
         }
         String cell = table.getValue(Address.parse(addressStr));
-        log(new PrintLogEvent(cell));
+        log(new ObjectLogEvent(cell));
     }
 
     private static void processSET(String addressStr, String valueStr) {
@@ -89,6 +92,7 @@ public class SpreadsheetEngine {
     }
 
     private static void processDisplay() {
+        Vizualizer.draw(table);
     }
 
     private static boolean isAddressValid(String addressStr) {

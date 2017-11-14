@@ -8,10 +8,8 @@ public class Table {
     public static final int MIN_ROW_COUNT = 1;
     public static final int MIN_COL_COUNT = 1;
 
-    private static final String UNDEFINED = "Undefined";
-
     private List<List<CellType>> table;
-    private HashMap<String, HashSet<String>> formulsByLink = new HashMap<>();
+    private HashMap<String, HashSet<String>> expressionByLink = new HashMap<>();
 
     public Table(Address bottomRightAddress) {
         int rowCount = bottomRightAddress.getRow();
@@ -36,8 +34,21 @@ public class Table {
         if (!isAddressValid(address)) {
             throw new IndexOutOfBoundsException("Invalid address");
         }
+        CellType value = get(address);
 
-        return get(address) == null ? "" : get(address).toString();
+        return value == null ? Formula.UNDEFINED : value.toString();
+    }
+
+    public List<List<CellType>> getTable() {
+        return table;
+    }
+
+    public int rowCount() {
+        return table.size();
+    }
+
+    public int colCount() {
+        return table.get(0).size();
     }
 
     public void setSimple(Address address, String valueStr)
@@ -45,7 +56,7 @@ public class Table {
         validateOnSet(address, valueStr);
         set(address, toAnyType(valueStr));
 
-        for (String formulaAddress : formulsByLink.getOrDefault(address.toString(), new HashSet<>())) {
+        for (String formulaAddress : expressionByLink.getOrDefault(address.toString(), new HashSet<>())) {
             calcFormulaIn(Address.parse(formulaAddress));
         }
     }
@@ -66,9 +77,9 @@ public class Table {
         set(address, formula);
 
         for (String addressToken : formula.getCellsTokens()) {
-            HashSet<String> addresses = formulsByLink.getOrDefault(addressToken, new HashSet<>());
+            HashSet<String> addresses = expressionByLink.getOrDefault(addressToken, new HashSet<>());
             addresses.add(address.toString());
-            formulsByLink.put(addressToken, addresses);
+            expressionByLink.put(addressToken, addresses);
         }
 
         calcFormulaIn(address);
@@ -85,14 +96,6 @@ public class Table {
         }
 
         return true;
-    }
-
-    private int rowCount() {
-        return table.size();
-    }
-
-    private int colCount() {
-        return table.get(0).size();
     }
 
     private CellType get(Address address) {
@@ -137,7 +140,7 @@ public class Table {
             Formula formula = (Formula) currValue;
 
             for (String addressToken : formula.getCellsTokens()) {
-                formulsByLink.get(addressToken).remove(address.toString());
+                expressionByLink.get(addressToken).remove(address.toString());
             }
         }
     }
@@ -150,16 +153,17 @@ public class Table {
         }
         Formula formula = (Formula) value;
         Stack<String> stack = new Stack<>();
-        CellType result = null;
         stack.addAll(formula.getTokens());
+        CellType result = Address.tryParse(stack.peek()) ? get(Address.parse(stack.peek())) : null;
 
         while (stack.size() > 2) {
             CellType second = get(Address.parse(stack.pop()));
             CellType first = get(Address.parse(stack.pop()));
             String sign = stack.pop();
             result = Arithmetic.calc(first, second, sign);
-            stack.push(result == null ? UNDEFINED : result.toString());
+            stack.push(result == null ? Formula.UNDEFINED : result.toString());
         }
+
         formula.setResult(result);
     }
 

@@ -17,7 +17,7 @@ public abstract class CellType<T> {
         return value.toString();
     }
 
-    public final T get() {
+    public T get() {
         return value;
     }
 
