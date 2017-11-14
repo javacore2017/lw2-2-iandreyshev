@@ -1,6 +1,6 @@
-package ru.iandreyshev.spreadsheetEngine.table.cellType;
+package ru.iandreyshev.spreadsheetEngine.table.cell;
 
-public abstract class CellType<T> {
+public abstract class Cell<T> {
     private T value;
 
     public final boolean setFromStr(String str) {
@@ -23,14 +23,6 @@ public abstract class CellType<T> {
 
     final void set(T value) {
         this.value = value;
-    }
-
-    final T tryCast(Object cellValue) {
-        try {
-            return (T) cellValue;
-        } catch (Exception ex) {
-            return null;
-        }
     }
 
     abstract T parse(String str);

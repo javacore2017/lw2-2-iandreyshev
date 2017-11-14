@@ -1,13 +1,10 @@
 package ru.iandreyshev.spreadsheetEngine.table;
 
-import ru.iandreyshev.spreadsheetEngine.table.cellType.CellType;
-import ru.iandreyshev.spreadsheetEngine.table.cellType.Int;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public final class Vizualizer {
-    private static final int CELL_WIDTH = 14;
+    private static final int CELL_WIDTH = 10;
     private static final String TRIM_TAIL = "...";
     private static final char BORDER_VERTICAL = '|';
     private static final char EMPTY = ' ';
@@ -17,7 +14,7 @@ public final class Vizualizer {
         final int colsCount = table.colCount() + 1;
         drawRow(colsCount, BORDER_HORIZONTAL, true);
         drawRow(colsCount, EMPTY, false);
-        drawRow((new StringBuilder(EMPTY)).toString(), toAddresses(1, colsCount));
+        drawRow(EMPTY + "", toAddresses(1, colsCount));
         drawRow(colsCount, BORDER_HORIZONTAL, false);
 
         for (int i = 0; i < table.rowCount(); ++i) {

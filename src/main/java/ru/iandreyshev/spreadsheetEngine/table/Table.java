@@ -1,6 +1,6 @@
 package ru.iandreyshev.spreadsheetEngine.table;
 
-import ru.iandreyshev.spreadsheetEngine.table.cellType.*;
+import ru.iandreyshev.spreadsheetEngine.table.cell.*;
 
 import java.util.*;
 
@@ -8,8 +8,8 @@ public class Table {
     public static final int MIN_ROW_COUNT = 1;
     public static final int MIN_COL_COUNT = 1;
 
-    private List<List<CellType>> table;
-    private HashMap<String, HashSet<String>> expressionByLink = new HashMap<>();
+    private List<List<Cell>> table;
+    private HashMap<Address, HashSet<Address>> expressionByLink = new HashMap<>();
 
     public Table(Address bottomRightAddress) {
         int rowCount = bottomRightAddress.getRow();
@@ -34,20 +34,20 @@ public class Table {
         if (!isAddressValid(address)) {
             throw new IndexOutOfBoundsException("Invalid address");
         }
-        CellType value = get(address);
+        Cell value = get(address);
 
         return value == null ? Formula.UNDEFINED : value.toString();
     }
 
-    public List<List<CellType>> getTable() {
+    public List<List<Cell>> getTable() {
         return table;
     }
 
-    public int rowCount() {
+    int rowCount() {
         return table.size();
     }
 
-    public int colCount() {
+    int colCount() {
         return table.get(0).size();
     }
 
@@ -56,8 +56,8 @@ public class Table {
         validateOnSet(address, valueStr);
         set(address, toAnyType(valueStr));
 
-        for (String formulaAddress : expressionByLink.getOrDefault(address.toString(), new HashSet<>())) {
-            calcFormulaIn(Address.parse(formulaAddress));
+        for (Address link : expressionByLink.getOrDefault(address, new HashSet<>())) {
+            calcFormulaIn(link);
         }
     }
 
@@ -70,18 +70,11 @@ public class Table {
             throw new IllegalArgumentException("Invalid formula format");
         } else if (!isFormulaAddressesAllowed(formula.getCells())) {
             throw new IndexOutOfBoundsException("Address out of bounds");
-        } else if (!isRecursionFree(address, formula.getCellsTokens())) {
+        } else if (!isRecursionFree(address, formula.getCells())) {
             throw new IllegalArgumentException("Recursion is not allowed");
         }
-
         set(address, formula);
-
-        for (String addressToken : formula.getCellsTokens()) {
-            HashSet<String> addresses = expressionByLink.getOrDefault(addressToken, new HashSet<>());
-            addresses.add(address.toString());
-            expressionByLink.put(addressToken, addresses);
-        }
-
+        addToMemory(address, formula);
         calcFormulaIn(address);
     }
 
@@ -98,12 +91,12 @@ public class Table {
         return true;
     }
 
-    private CellType get(Address address) {
+    private Cell get(Address address) {
         return table.get(address.getRow() - 1).get(address.getCol() - 1);
     }
 
-    private void set(Address address, CellType value) {
-        clearMemoryOfFormula(address);
+    private void set(Address address, Cell value) {
+        removeFromMemory(address);
         table.get(address.getRow() - 1).set(address.getCol() - 1, value);
     }
 
@@ -116,14 +109,13 @@ public class Table {
         }
     }
 
-    private CellType toAnyType(String value) {
-        CellType result = new Str(value);
-        Int intResult = new Int();
+    private Cell toAnyType(String value) {
+        Cell result = new Str(value);
+        Num intResult = new Num();
 
         if (intResult.setFromStr(value)) {
             result = intResult;
         }
-
         Dat datResult = new Dat();
 
         if (datResult.setFromStr(value)) {
@@ -133,67 +125,82 @@ public class Table {
         return result;
     }
 
-    private void clearMemoryOfFormula(Address address) {
-        CellType currValue = get(address);
+    private void addToMemory(Address address, Formula formula) {
+        for (Address cell : formula.getCells()) {
+            HashSet<Address> addresses = expressionByLink.getOrDefault(cell, new HashSet<>());
+            addresses.add(address);
+            expressionByLink.put(cell, addresses);
+        }
+    }
+
+    private void removeFromMemory(Address address) {
+        Cell currValue = get(address);
 
         if (currValue instanceof Formula) {
             Formula formula = (Formula) currValue;
 
-            for (String addressToken : formula.getCellsTokens()) {
-                expressionByLink.get(addressToken).remove(address.toString());
+            for (Address cell : formula.getCells()) {
+                expressionByLink.get(address).remove(cell);
             }
         }
     }
 
     private void calcFormulaIn(Address address) throws IllegalArgumentException {
-        CellType value = get(address);
-
-        if (!(value instanceof Formula)) {
+        if (!(get(address) instanceof Formula)) {
             return;
         }
-        Formula formula = (Formula) value;
-        Stack<String> stack = new Stack<>();
-        stack.addAll(formula.getTokens());
-        CellType result = Address.tryParse(stack.peek()) ? get(Address.parse(stack.peek())) : null;
+        Formula formula = (Formula) get(address);
+        Stack<Cell> stack = new Stack<>();
 
-        while (stack.size() > 2) {
-            CellType second = get(Address.parse(stack.pop()));
-            CellType first = get(Address.parse(stack.pop()));
-            String sign = stack.pop();
-            result = Arithmetic.calc(first, second, sign);
-            stack.push(result == null ? Formula.UNDEFINED : result.toString());
+        for (String token : formula.getTokens()) {
+            if (!Arithmetic.isSign(token)) {
+                if (Address.tryParse(token)) {
+                    stack.add(get(Address.parse(token)));
+                } else {
+                    stack.add(toAnyType(token));
+                }
+                continue;
+            }
+            Cell first = stack.pop();
+            Cell second = stack.pop();
+            try {
+                stack.push(Arithmetic.calc(first, second, token));
+            } catch (Exception ex) {
+                formula.setResult(null);
+                return;
+            }
         }
-
-        formula.setResult(result);
+        formula.setResult(stack.peek());
     }
 
-    private boolean isRecursionFree(Address start, HashSet<String> formulaAddressTokens) {
-        if (formulaAddressTokens.contains(start.toString())) {
+    private boolean isRecursionFree(Address start, HashSet<Address> addressTokens) {
+        if (addressTokens.contains(start)) {
             return false;
         }
 
-        HashSet<String> passedCells = new HashSet<>();
-        Stack<String> cellsQueue = new Stack<>();
-        cellsQueue.addAll(formulaAddressTokens);
+        HashSet<Address> passedCells = new HashSet<>();
+        Stack<Address> cellsQueue = new Stack<>();
+        cellsQueue.addAll(addressTokens);
 
-        while (cellsQueue.size() > 0) {
-            String current = cellsQueue.pop();
+        while (!cellsQueue.isEmpty()) {
+            Address current = cellsQueue.pop();
 
             if (passedCells.contains(current)) {
                 continue;
             }
             passedCells.add(current);
-            CellType currentValue = get(Address.parse(current));
+            Cell currentValue = get(current);
 
             if (!(currentValue instanceof Formula)) {
                 continue;
             }
             Formula formula = (Formula) currentValue;
-            for (String addressToken : formula.getCellsTokens()) {
-                if (addressToken.compareTo(start.toString()) == 0) {
+
+            for (Address cell : formula.getCells()) {
+                if (cell.equals(start)) {
                     return false;
                 }
-                cellsQueue.add(addressToken);
+                cellsQueue.add(cell);
             }
         }
 

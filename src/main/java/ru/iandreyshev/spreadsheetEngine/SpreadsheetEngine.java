@@ -1,6 +1,6 @@
 package ru.iandreyshev.spreadsheetEngine;
 
-import ru.iandreyshev.spreadsheetEngine.command.CommandBuilder;
+import ru.iandreyshev.spreadsheetEngine.command.Command;
 import ru.iandreyshev.spreadsheetEngine.command.CommandType;
 import ru.iandreyshev.spreadsheetEngine.command.ICommand;
 import ru.iandreyshev.spreadsheetEngine.table.Table;
@@ -48,7 +48,7 @@ public class SpreadsheetEngine {
         log(new WaitCommandLogEvent());
 
         while ((input = reader.readLine()) != null) {
-            ICommand cmd = CommandBuilder.parse(input);
+            ICommand cmd = Command.parse(input);
 
             if (cmd.getType() == CommandType.EXIT) {
                 break;
@@ -56,7 +56,6 @@ public class SpreadsheetEngine {
             interpreter
                     .getOrDefault(cmd.getType(), c -> log(new InvalidCommandLogEvent()))
                     .accept(cmd);
-            log(new ObjectLogEvent(OK));
             log(new WaitCommandLogEvent());
         }
         log(new ObjectLogEvent(EXIT_MESSAGE));
@@ -76,7 +75,12 @@ public class SpreadsheetEngine {
             log(new InvalidCellAddressLogEvent(TOP_LEFT_CELL, BOTTOM_RIGHT_CELL));
             return;
         }
-        table.setSimple(Address.parse(addressStr), valueStr);
+        try {
+            table.setSimple(Address.parse(addressStr), valueStr);
+            log(new ObjectLogEvent(OK));
+        } catch (Exception ex) {
+            log(new InvalidCellFormatLogEvent());
+        }
     }
 
     private static void processFormula(String addressStr, String value) {
@@ -86,6 +90,7 @@ public class SpreadsheetEngine {
         }
         try {
             table.setFormula(Address.parse(addressStr), value);
+            log(new ObjectLogEvent(OK));
         } catch (Exception ex) {
             log(new InvalidFormulaFormatLogEvent(value, ex.getMessage()));
         }

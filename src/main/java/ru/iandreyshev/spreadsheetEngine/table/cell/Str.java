@@ -1,6 +1,6 @@
-package ru.iandreyshev.spreadsheetEngine.table.cellType;
+package ru.iandreyshev.spreadsheetEngine.table.cell;
 
-public final class Str extends CellType<String> {
+public final class Str extends Cell<String> {
     public Str() {
         set("");
     }

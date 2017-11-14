@@ -3,7 +3,7 @@ package ru.iandreyshev.spreadsheetEngine.command;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class CommandBuilder implements ICommand {
+public class Command implements ICommand {
     private static final int COMMAND_GROUP_NUM = 1;
     private static final int CELL_GROUP_NUM = 2;
     private static final int VALUE_GROUP_NUM = 3;
@@ -14,13 +14,14 @@ public class CommandBuilder implements ICommand {
     private static final String DISPLAY_COMMAND = "display";
     private static final String HELP_COMMAND = "help";
     private static final String EXIT_COMMAND = "exit";
+    private static final Pattern PATTERN = Pattern.compile(COMMAND_REGEX);
 
     private CommandType type = CommandType.INVALID;
     private String cell = "";
     private String value = "";
 
     public static ICommand parse(String input) throws IllegalArgumentException {
-        CommandBuilder command = new CommandBuilder();
+        Command command = new Command();
 
         if (input == null) {
             return command;
@@ -48,18 +49,18 @@ public class CommandBuilder implements ICommand {
 
     @Override
     public String toString() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("Command type: [" + type.toString() + "]\n");
-        builder.append("Cell: [" + cell + "]\n");
-        builder.append("Value: [" + value + "]\n");
+        String result = "";
+        result += "Command type: [" + type.toString() + "]\n";
+        result += "Cell: [" + cell + "]\n";
+        result += "Value: [" + value + "]\n";
 
-        return builder.toString();
+        return result;
     }
 
-    private CommandBuilder() {}
+    private Command() {}
 
     private void parseCommand(String input) {
-        Matcher matcher = Pattern.compile(COMMAND_REGEX).matcher(input);
+        Matcher matcher = PATTERN.matcher(input);
         matcher.find();
         assignType(matcher.group(COMMAND_GROUP_NUM));
         cell = matcher.group(CELL_GROUP_NUM);

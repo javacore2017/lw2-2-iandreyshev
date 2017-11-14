@@ -1,7 +1,7 @@
 package ru.iandreyshev.spreadsheetEngine.table;
 
-import ru.iandreyshev.spreadsheetEngine.table.cellType.*;
-import java.util.regex.Matcher;
+import ru.iandreyshev.spreadsheetEngine.table.cell.*;
+
 import java.util.regex.Pattern;
 
 public final class Arithmetic {
@@ -10,17 +10,9 @@ public final class Arithmetic {
     private static final String MUL_SIGN = "*";
     private static final String DIV_SIGN = "/";
     private static final String SIGN_REGEX = "[-+*/]";
+    private static final Pattern SIGN_PATTERN = Pattern.compile(SIGN_REGEX);
 
-    public static boolean isInt(String value) {
-        try {
-            Integer.parseInt(value);
-            return true;
-        } catch (Exception ex) {
-            return false;
-        }
-    }
-
-    static CellType calc(CellType first, CellType second, String sign) {
+    static Cell calc(Cell first, Cell second, String sign) {
         if (sign.compareTo(SUM_SIGN) == 0) {
             return sum(first, second);
         }
@@ -33,55 +25,53 @@ public final class Arithmetic {
         if (sign.compareTo(DIV_SIGN) == 0) {
             return div(first, second);
         }
-        return new Str("Null");
+        return new Str(Formula.UNDEFINED);
     }
 
     public static boolean isSign(String token) {
-        final Matcher matcher = Pattern.compile(SIGN_REGEX).matcher(token);
-
-        return matcher.matches();
+        return SIGN_PATTERN.matcher(token).matches();
     }
 
-    private static CellType sum(CellType left, CellType right) {
-        if (isInt(left) && isInt(right)) {
-            int result = ((Int) left).get() + ((Int) right).get();
-            return new Int(result);
+    private static Cell sum(Cell left, Cell right) {
+        if (isNum(left) && isNum(right)) {
+            float result = ((Num) left).get() + ((Num) right).get();
+            return new Num(result);
         }
 
         return null;
     }
 
-    private static CellType sub(CellType left, CellType right) {
-        if (isInt(left) && isInt(right)) {
-            int result = ((Int) left).get() - ((Int) right).get();
-            return new Int(result);
+    private static Cell sub(Cell left, Cell right) {
+        if (isNum(left) && isNum(right)) {
+            float result = ((Num) left).get() - ((Num) right).get();
+            return new Num(result);
         }
 
         return null;
     }
 
-    private static CellType mul(CellType left, CellType right) {
-        if (isInt(left) && isInt(right)) {
-            int result = ((Int) left).get() * ((Int) right).get();
-            return new Int(result);
+    private static Cell mul(Cell left, Cell right) {
+        if (isNum(left) && isNum(right)) {
+            float result = ((Num) left).get() * ((Num) right).get();
+            return new Num(result);
         }
 
         return null;
     }
 
-    private static CellType div(CellType left, CellType right) throws IllegalArgumentException {
-        if (isInt(left) && isInt(right)) {
-            if (((Int) right).get() == 0) {
+    private static Cell div(Cell left, Cell right) throws IllegalArgumentException {
+        if (isNum(left) && isNum(right)) {
+            if (((Num) right).get() == 0) {
                 throw new IllegalArgumentException("Divide by zero");
             }
-            int result = ((Int) left).get() / ((Int) right).get();
-            return new Int(result);
+            float result = ((Num) left).get() / ((Num) right).get();
+            return new Num(result);
         }
 
         return null;
     }
 
-    private static boolean isInt(CellType value) {
-        return value instanceof Int;
+    private static boolean isNum(Cell value) {
+        return value instanceof Num;
     }
 }
