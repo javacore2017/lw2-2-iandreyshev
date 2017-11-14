@@ -8,8 +8,8 @@ public class Table {
     public static final int MIN_ROW_COUNT = 1;
     public static final int MIN_COL_COUNT = 1;
 
-    private List<List<Cell>> table;
-    private HashMap<Address, HashSet<Address>> expressionByLink = new HashMap<>();
+    private final List<List<Cell>> table = new ArrayList<>();
+    private final HashMap<Address, HashSet<Address>> expressionByLink = new HashMap<>();
 
     public Table(Address bottomRightAddress) {
         int rowCount = bottomRightAddress.getRow();
@@ -17,8 +17,6 @@ public class Table {
 
         rowCount = (rowCount < MIN_ROW_COUNT) ? MIN_ROW_COUNT : rowCount;
         colCount = (colCount < MIN_COL_COUNT) ? MIN_COL_COUNT : colCount;
-
-        table = new ArrayList<>();
 
         for (int row = 0; row < rowCount; ++row) {
             table.add(new ArrayList<>());

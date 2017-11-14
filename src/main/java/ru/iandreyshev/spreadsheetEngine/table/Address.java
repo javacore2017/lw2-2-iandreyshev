@@ -11,8 +11,8 @@ public class Address {
     private static final int ROW_GROUP = 3;
     private static final int MIN_VALUE = 1;
 
-    private int col;
-    private int row;
+    private final int col;
+    private final int row;
 
     public static Address parse(String str) throws IllegalArgumentException {
         if (str == null) {

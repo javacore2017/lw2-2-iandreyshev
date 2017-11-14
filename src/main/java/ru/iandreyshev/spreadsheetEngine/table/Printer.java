@@ -3,8 +3,9 @@ package ru.iandreyshev.spreadsheetEngine.table;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class Vizualizer {
+public final class Printer {
     private static final int CELL_WIDTH = 10;
+    private static final int START_ROW = Table.MIN_ROW_COUNT;
     private static final String TRIM_TAIL = "...";
     private static final char BORDER_VERTICAL = '|';
     private static final char EMPTY = ' ';
@@ -14,7 +15,7 @@ public final class Vizualizer {
         final int colsCount = table.colCount() + 1;
         drawRow(colsCount, BORDER_HORIZONTAL, true);
         drawRow(colsCount, EMPTY, false);
-        drawRow(EMPTY + "", toAddresses(1, colsCount));
+        drawRow(EMPTY + "", toAddresses(colsCount));
         drawRow(colsCount, BORDER_HORIZONTAL, false);
 
         for (int i = 0; i < table.rowCount(); ++i) {
@@ -72,11 +73,11 @@ public final class Vizualizer {
         return builder.toString();
     }
 
-    private static Object[] toAddresses(int start, int end) {
+    private static Object[] toAddresses(int end) {
+        int start = START_ROW;
+
         if (start > end) {
-            int t = end;
             end = start;
-            start = t;
         }
 
         List<Object> result = new ArrayList<>();

@@ -6,7 +6,7 @@ import ru.iandreyshev.spreadsheetEngine.command.ICommand;
 import ru.iandreyshev.spreadsheetEngine.table.Table;
 import ru.iandreyshev.spreadsheetEngine.table.Address;
 import ru.iandreyshev.spreadsheetEngine.log.*;
-import ru.iandreyshev.spreadsheetEngine.table.Vizualizer;
+import ru.iandreyshev.spreadsheetEngine.table.Printer;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,7 +20,7 @@ public class SpreadsheetEngine {
     private static final HashMap<CommandType, Consumer<ICommand>> interpreter = new HashMap<>();
     private static final String OK = "OK";
     private static final String EXIT_MESSAGE = "Exit from table... Goodbye!";
-    private static Table table = new Table(BOTTOM_RIGHT_CELL);
+    private static final Table table = new Table(BOTTOM_RIGHT_CELL);
 
     public static void main(String[] args) {
         try {
@@ -97,7 +97,7 @@ public class SpreadsheetEngine {
     }
 
     private static void processDisplay() {
-        Vizualizer.draw(table);
+        Printer.draw(table);
     }
 
     private static boolean isAddressValid(String addressStr) {

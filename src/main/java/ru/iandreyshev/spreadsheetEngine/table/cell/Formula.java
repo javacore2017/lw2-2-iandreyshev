@@ -11,8 +11,8 @@ public final class Formula extends Cell<Cell> {
     private static final char LEFT_BRACKET = '(';
     private static final char RIGHT_BRACKET = ')';
 
-    private List<String> tokens = new ArrayList<>();
-    private HashSet<Address> cells = new HashSet<>();
+    private final List<String> tokens = new ArrayList<>();
+    private final HashSet<Address> cells = new HashSet<>();
 
     public List<String> getTokens() {
         return tokens;

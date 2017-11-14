@@ -7,10 +7,10 @@ public class Command implements ICommand {
     private static final int COMMAND_GROUP_NUM = 1;
     private static final int CELL_GROUP_NUM = 2;
     private static final int VALUE_GROUP_NUM = 3;
-    private static final String COMMAND_REGEX = " *([\\S]+) *([a-zA-Z0-9]+)* *(\\:[\\S- ]*)* *";
+    private static final String COMMAND_REGEX = " *([\\S]+) *([a-zA-Z0-9]+)* *(:[\\S- ]*)* *";
     private static final String GET_COMMAND = "get";
     private static final String SET_COMMAND = "set";
-    private static final String FORMULA_COMMAND = "setformula";
+    private static final String FORMULA_COMMAND = "formula";
     private static final String DISPLAY_COMMAND = "display";
     private static final String HELP_COMMAND = "help";
     private static final String EXIT_COMMAND = "exit";
