@@ -1,0 +1,9 @@
+# IntelliJ IDEA
+testResults
+.idea
+
+# Debug
+*.log
+
+# Build
+build
